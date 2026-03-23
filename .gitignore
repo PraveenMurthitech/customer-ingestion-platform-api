@@ -1,0 +1,49 @@
+# 🔥 Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 🔥 Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# 🔥 Environment variables (VERY IMPORTANT)
+.env
+.env.*
+
+# 🔥 Logs & temp files
+*.log
+*.tmp
+
+# 🔥 Database files
+*.sqlite3
+*.db
+
+# 🔥 IDE / Editor files
+.vscode/
+.idea/
+
+# 🔥 OS files
+.DS_Store
+Thumbs.db
+
+# 🔥 Test / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# 🔥 Build / packaging
+build/
+dist/
+*.egg-info/
+
+# 🔥 Migrations (optional - depends)
+# migrations/
+
+# 🔥 Node (if using frontend)
+node_modules/
+
+# 🔥 Docker (optional override files)
+docker-compose.override.yml
