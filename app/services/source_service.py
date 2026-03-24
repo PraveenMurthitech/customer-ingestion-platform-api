@@ -1,33 +1,44 @@
-from app.services.common_service import insert, update
+from app.db.dqa.source import SourceDAO
 from app.connectors.factory import get_connector
 from app.core.response import success_response, exception_response
 from app.core.exceptions import AppException
 
-from app.dqa.source import (
-    get_all_sources,
-    get_single_source,
-    activate_source,
-    deactivate_source
-)
+
+dao = SourceDAO()
 
 
+# 🔹 ADD SOURCE
 def add_source_service(customer_id: int, payload: dict):
     try:
         if not customer_id:
             raise AppException("CUSTOMER_NOT_FOUND", 404)
 
-        result = insert(payload)
+        if not payload:
+            raise AppException("INVALID_PAYLOAD", 400)
+
+        payload["customer_id"] = customer_id
+
+        result = dao.insert(payload)
 
         return success_response(
-            data={"config_id": result["data"]["id"]},
+            data=result,  # ✅ FIXED (no {})
             message="Source config added",
             status_code=201
         )
 
-    except Exception as e:
+    except AppException as e:
         return exception_response(e)
 
+    except Exception as e:
+        return exception_response(
+            AppException(
+                error_code="INTERNAL_SERVER_ERROR",
+                status_code=500
+            )
+        )
 
+
+# 🔹 UPDATE SOURCE
 def update_source_service(customer_id: int, source_name: str, payload: dict):
     try:
         if not customer_id:
@@ -36,11 +47,11 @@ def update_source_service(customer_id: int, source_name: str, payload: dict):
         if not source_name:
             raise AppException("SOURCE_NOT_FOUND", 404)
 
-        update(payload)
+        dao.update(customer_id, source_name, payload)
 
         return success_response(
             data={
-                "config_id": "uuid",
+                "customer_id": customer_id,
                 "source_name": source_name
             },
             message="Source configuration updated successfully"
@@ -50,15 +61,13 @@ def update_source_service(customer_id: int, source_name: str, payload: dict):
         return exception_response(e)
 
 
+# 🔹 TEST CONNECTION (this part was fine)
 def test_connection_service(source_name: str, config: dict):
     try:
         if not source_name:
             raise AppException("INVALID_SOURCE", 400)
 
         connector = get_connector(source_name)
-
-        if not connector:
-            raise AppException("SOURCE_NOT_FOUND", 404)
 
         result = connector.test_connection(config)
 
@@ -71,12 +80,13 @@ def test_connection_service(source_name: str, config: dict):
         return exception_response(e)
 
 
+# 🔹 GET ALL SOURCES
 def get_all_sources_service(customer_id: int):
     try:
         if not customer_id:
             raise AppException("CUSTOMER_NOT_FOUND", 404)
 
-        data = get_all_sources(customer_id)
+        data = dao.get_all(customer_id)
 
         if not data:
             raise AppException("NO_SOURCES_FOUND", 404)
@@ -90,6 +100,7 @@ def get_all_sources_service(customer_id: int):
         return exception_response(e)
 
 
+# 🔹 GET SINGLE SOURCE
 def get_single_source_service(customer_id: int, source_name: str):
     try:
         if not customer_id:
@@ -98,7 +109,7 @@ def get_single_source_service(customer_id: int, source_name: str):
         if not source_name:
             raise AppException("SOURCE_NOT_FOUND", 404)
 
-        data = get_single_source(customer_id, source_name)
+        data = dao.get_single(customer_id, source_name)
 
         if not data:
             raise AppException("SOURCE_NOT_FOUND", 404)
@@ -112,6 +123,7 @@ def get_single_source_service(customer_id: int, source_name: str):
         return exception_response(e)
 
 
+# 🔹 ACTIVATE
 def activate_source_service(customer_id: int, source_name: str):
     try:
         if not customer_id:
@@ -120,10 +132,7 @@ def activate_source_service(customer_id: int, source_name: str):
         if not source_name:
             raise AppException("SOURCE_NOT_FOUND", 404)
 
-        result = activate_source(customer_id, source_name)
-
-        if not result:
-            raise AppException("SOURCE_NOT_FOUND", 404)
+        dao.activate(customer_id, source_name)
 
         return success_response(
             data={},
@@ -134,6 +143,7 @@ def activate_source_service(customer_id: int, source_name: str):
         return exception_response(e)
 
 
+# 🔹 DEACTIVATE
 def deactivate_source_service(customer_id: int, source_name: str):
     try:
         if not customer_id:
@@ -142,10 +152,7 @@ def deactivate_source_service(customer_id: int, source_name: str):
         if not source_name:
             raise AppException("SOURCE_NOT_FOUND", 404)
 
-        result = deactivate_source(customer_id, source_name)
-
-        if not result:
-            raise AppException("SOURCE_NOT_FOUND", 404)
+        dao.deactivate(customer_id, source_name)
 
         return success_response(
             data={},

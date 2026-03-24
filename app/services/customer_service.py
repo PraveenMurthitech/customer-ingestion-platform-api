@@ -1,15 +1,19 @@
-from app.services.common_service import insert, update
-from app.dqa.customer import get_customer, list_customers
+from app.db import CustomerDAO
 from app.core.response import success_response, exception_response
 from app.core.exceptions import AppException
+
+dao = CustomerDAO()
 
 
 def create_customer_service(payload: dict):
     try:
-        result = insert(payload)
+        print("-->", payload)
+        result = dao.insert(payload)
+
+        print(result)
 
         return success_response(
-            data={"customer_id": result["data"]["id"]},
+            data={"customer_id": result["id"]},
             message="Customer created successfully",
             status_code=201
         )
@@ -20,7 +24,7 @@ def create_customer_service(payload: dict):
 
 def update_customer_service(customer_id: int, payload: dict):
     try:
-        update(payload)
+        dao.update(customer_id, payload)
 
         return success_response(
             data={"customer_id": customer_id},
@@ -30,9 +34,10 @@ def update_customer_service(customer_id: int, payload: dict):
     except Exception as e:
         return exception_response(e)
 
+
 def get_customer_service(customer_id: int):
     try:
-        data = get_customer(customer_id)
+        data = dao.get(customer_id)
 
         if data is None:
             raise AppException(
@@ -54,7 +59,7 @@ def get_customer_service(customer_id: int):
 
 def list_customers_service(limit: int, offset: int):
     try:
-        data = list_customers(limit, offset)
+        data = dao.list(limit, offset)
 
         return success_response(
             data=data,

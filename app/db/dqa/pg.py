@@ -1,7 +1,6 @@
 # app/dqa/pg.py
 
 def insert_query(table: str, data: dict):
-    print(f"[DB INSERT] Table: {table} | Data: {data}")
 
     return {
         "status": "success",
@@ -12,7 +11,6 @@ def insert_query(table: str, data: dict):
 
 
 def update_query(table: str, data: dict, condition: dict):
-    print(f"[DB UPDATE] Table: {table} | Data: {data} | Condition: {condition}")
 
     return {
         "status": "success",
